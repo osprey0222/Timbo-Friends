@@ -6,7 +6,7 @@ public static class UIManager
 {
     private static Dictionary<string, GameObject> m_UIDic = new Dictionary<string, GameObject>();
     private static Canvas m_Canvas;
-    private static string m_UIPath = "Prefab/";
+    private static string m_UIPath = "Prefab/UI/";
 
     public static void Init()
     {
