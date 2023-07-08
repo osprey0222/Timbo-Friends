@@ -23,14 +23,14 @@ public class CharacterCtrl : BaseCharacter
     private float m_CurrentRunSpeed;
     private Rigidbody2D m_Rigidbody2D;
     private Animator m_Animator;
-    private Collider2D m_Collider2D;
+    private BoxCollider2D m_Collider2D;
     private int m_JumpCounter = 0;
 
     protected override void Start()
     {
         m_Rigidbody2D = GetComponentInChildren<Rigidbody2D>();
         m_Animator = GetComponentInChildren<Animator>();
-        m_Collider2D = GetComponentInChildren<Collider2D>();
+        m_Collider2D = GetComponentInChildren<BoxCollider2D>();
     }
 
     void Update()
@@ -51,7 +51,6 @@ public class CharacterCtrl : BaseCharacter
         {
             Jump();
             ++m_JumpCounter;
-            Debug.Log(m_JumpCounter);
         }
         if (IsGrounded())
         {
@@ -101,15 +100,18 @@ public class CharacterCtrl : BaseCharacter
         {
             state = EMovementState.Jump;
         }
-        else if (m_Rigidbody2D.velocity.y < -0.2f)
+        else if (m_Rigidbody2D.velocity.y < -0.1f)
         {
-            state = EMovementState.Fall;
+            Debug.Log(m_Rigidbody2D.velocity.y);
+             state = EMovementState.Fall;
         }
 
         m_Animator.Play("" + state);
     }
+
     private bool IsGrounded()
     {
         return Physics2D.BoxCast(m_Collider2D.bounds.center, m_Collider2D.bounds.size, 0f, Vector2.down, 0.1f, jumpableGround);
+
     }
 }
