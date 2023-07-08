@@ -6,7 +6,7 @@ public static class UIManager
 {
     private static Dictionary<string, GameObject> m_UIDic = new Dictionary<string, GameObject>();
     private static Canvas m_Canvas;
-    private static string m_UIPath = "Prefab/UI/";
+    private static string m_UIPath = "UI/Prefab/";
 
     public static void Init()
     {
@@ -15,29 +15,37 @@ public static class UIManager
 
     public static GameObject Show(string uiName)
     {
-        GameObject uiObj = null;
-        if (m_UIDic.ContainsKey(uiName))
+        try
         {
-            m_UIDic[uiName].GetComponent<RectTransform>().SetAsLastSibling();
-            m_UIDic[uiName].gameObject.SetActive(true);
+            GameObject uiObj = null;
+            if (m_UIDic.ContainsKey(uiName))
+            {
+                m_UIDic[uiName].GetComponent<RectTransform>().SetAsLastSibling();
+                m_UIDic[uiName].gameObject.SetActive(true);
+            }
+            else
+            {
+                uiObj = Resources.Load<GameObject>(m_UIPath + uiName).gameObject;
+
+                uiObj = GameObject.Instantiate(uiObj) as GameObject;
+
+                uiObj.transform.SetParent(m_Canvas.gameObject.transform); ;
+                uiObj.transform.localPosition = Vector3.one;
+                uiObj.transform.localScale = Vector3.one;
+                uiObj.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
+                uiObj.SetActive(true);
+                m_UIDic.Add(uiName, uiObj);
+            }
+            return uiObj;
         }
-        else
+        catch (System.Exception)
         {
-            uiObj = Resources.Load<UIBase>(m_UIPath + uiName).gameObject;
-            uiObj = GameObject.Instantiate(uiObj) as GameObject;
-
-            uiObj.transform.SetParent(m_Canvas.gameObject.transform);;
-            uiObj.transform.localPosition = Vector3.one;
-            uiObj.transform.localScale = Vector3.one;
-            uiObj.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
-            uiObj.SetActive(true);
-            m_UIDic.Add(uiName, uiObj);
-
+            Debug.LogWarning("UI is not exist: " + m_UIPath + uiName);
         }
-        return uiObj;
+        return null;
     }
 
-    private static void HideUI(string uiName)
+    public static void HideUI(string uiName)
     {
         m_UIDic[uiName].gameObject.SetActive(false);
     }

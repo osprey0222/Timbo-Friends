@@ -1,131 +1,115 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CharacterCtrl : MonoBehaviour
+public class CharacterCtrl : BaseCharacter
 {
-    public bool m_IsBot = false;
-    private float m_RunSpeed = 7f;
-    private float m_CurSpeed;
-    private float KEY_STROKE_TIME = 0.015f;
-    private float COUNT_LIMIT = 1f;
-    public KeyCode m_ACtrlKey = KeyCode.Z;
-    public KeyCode m_BCtrlKey = KeyCode.X;
-    private bool m_IsAKeyPressed = false;
-    private float KeystrokeValue = 0.015f;
-    private float m_Strokes;
-    private float m_CountTime;
+    [Header("Character Details")]
+    [Space]
+    [SerializeField]
+    protected float m_MaxRunSpeed = 8f;
+    [SerializeField]
+    protected float m_RunSmoothTime = 5f;
+    [SerializeField]
+    protected float m_RunSpeed = 5f;
+    [SerializeField]
+    protected float m_JumpStrength = 5f;
+    [SerializeField]
+    private LayerMask jumpableGround;
+
+    private float m_CurrentSmoothVelocity;
+    private Vector2 m_Speed;
+    private float m_CurrentRunSpeed;
+    private Rigidbody2D m_Rigidbody2D;
     private Animator m_Animator;
-    private Rigidbody2D m_Rigidbody;
-    private Vector3 m_InitPos;
+    private Collider2D m_Collider2D;
+    private int m_JumpCounter = 0;
 
-    private void Start()
+    protected override void Start()
     {
-        m_Animator = GetComponent<Animator>();
-        m_Rigidbody = GetComponent<Rigidbody2D>();
-        m_InitPos = transform.position;
-    }
-    private void GetKeyEvent()
-    {
-        if (Input.GetKeyUp(m_ACtrlKey) && Input.GetKeyUp(m_BCtrlKey))
-        {
-            //Debug.Log("same press");
-            return;
-        }
-        if (Input.GetKeyUp(m_ACtrlKey) && !m_IsAKeyPressed)
-        {
-            m_Strokes += KeystrokeValue;
-            //Debug.Log("a pressed");
-            m_IsAKeyPressed = true;
-            return;
-        }
-        if (Input.GetKeyUp(m_BCtrlKey) && m_IsAKeyPressed)
-        {
-            m_Strokes += KeystrokeValue;
-            m_IsAKeyPressed = false;
-            //Debug.Log("b pressed");
-            return;
-        }
+        m_Rigidbody2D = GetComponentInChildren<Rigidbody2D>();
+        m_Animator = GetComponentInChildren<Animator>();
+        m_Collider2D = GetComponentInChildren<Collider2D>();
     }
 
-    private void FixedUpdate()
+    void Update()
     {
-        if (GameManager.Singleton.GameRunning)
+        // Speed
+        m_Speed = new Vector2(Mathf.Abs(m_Rigidbody2D.velocity.x), Mathf.Abs(m_Rigidbody2D.velocity.y));
+
+        // Speed Calculations
+        m_CurrentRunSpeed = m_RunSpeed;
+        if (m_Speed.x >= m_RunSpeed)
         {
-            Time.fixedDeltaTime = KEY_STROKE_TIME;
-            GetKeyEvent();
+            m_CurrentRunSpeed = Mathf.SmoothDamp(m_Speed.x, m_MaxRunSpeed, ref m_CurrentSmoothVelocity, m_RunSmoothTime);
+        }
+        // Input Processing
+        Move(Input.GetAxis("Horizontal"));
+
+        if (Input.GetButtonDown("Jump") && m_JumpCounter < 1)
+        {
+            Jump();
+            ++m_JumpCounter;
+            Debug.Log(m_JumpCounter);
+        }
+        if (IsGrounded())
+        {
+            m_JumpCounter = 0;
         }
     }
 
-    float m_Movement = 0f;
-    public IEnumerator UpdateCoroutine()
+    private void Jump()
     {
-        while(true)
+        Vector2 velocity = m_Rigidbody2D.velocity;
+        velocity.y = m_JumpStrength;
+        m_Rigidbody2D.velocity = velocity;
+    }
+
+    private void Move(float horizontalAxis)
+    {
+        m_Rigidbody2D.velocity = new Vector2(horizontalAxis * m_CurrentRunSpeed, m_Rigidbody2D.velocity.y);
+        if (horizontalAxis > 0f)
         {
-            if (GameManager.Singleton.GameRunning)
-            {
-                if (transform.position.x < Config.TRACK_LENGTH)
-                {
-                    if (m_IsBot)
-                    {
-                        m_Movement = Random.Range(0.8f, 1f);
-                        m_Rigidbody.velocity = new Vector2(Random.Range(0.9f, 1f) * m_RunSpeed, m_Rigidbody.velocity.y);
-                    }
-                    else
-                    {
-                        //if (m_CountTime > Time.deltaTime)
-                        //{
-                        if (m_Strokes != 0f)
-                        {
-                            //movement = movement > 0f ? movement - 0.01f : movement;
-                            m_Movement = m_Strokes / Time.deltaTime;
-                            m_Rigidbody.velocity = new Vector2(m_Movement * m_RunSpeed, m_Rigidbody.velocity.y);
-                        }
-                        else
-                        {
-                            m_CountTime += Time.deltaTime;
-                            if (m_CountTime > COUNT_LIMIT)
-                            {
-                                float dist = Mathf.Clamp(m_Rigidbody.velocity.x * 0.95f, 0f, m_RunSpeed);
-                                Debug.Log("    " + m_Strokes + "--------------" + dist);
-                                m_Rigidbody.velocity = new Vector2(dist, m_Rigidbody.velocity.y);
-                                m_CountTime = 0f;
-                            }
-                        }
-                        m_Strokes = 0f;
-                    }
-                    GameUI.Singleton.SetRunnerInfo(transform.position.x, m_Rigidbody.velocity.x, m_IsBot);
-                }
-                else
-                {
-                    GameManager.Singleton.FinishRunnig(m_IsBot, gameObject.name);
-                    GameUI.Singleton.SetRunnerInfo(Config.TRACK_LENGTH, m_Rigidbody.velocity.x, m_IsBot);
-                    m_Rigidbody.velocity = Vector2.zero;
-                    m_Movement = 0f;
-                    yield break;
-                }
-                m_Animator.SetFloat("Speed", m_Movement);
-            }
-            else
-            {
-                m_Rigidbody.velocity = Vector2.zero;
-                m_Animator.SetFloat("Speed", 0f);
-            }
-            yield return null;
+            Vector3 scale = transform.localScale;
+            scale.x = Mathf.Sign(horizontalAxis);
+            transform.localScale = scale;
         }
+        else if (horizontalAxis < 0f)
+        {
+            Vector3 scale = transform.localScale;
+            scale.x = Mathf.Sign(horizontalAxis);
+            transform.localScale = scale;
+        }
+        UpdateAnimationState(horizontalAxis);
     }
-    private void Update()
+
+    void UpdateAnimationState(float dirX)
     {
-       
-    }
+        EMovementState state;
 
-    public void Reset()
+        if (dirX == 0f)
+        {
+            state = EMovementState.Idle;
+        }
+        else
+        {
+            state = EMovementState.Run;
+        }
+
+        if (m_Rigidbody2D.velocity.y > .1f)
+        {
+            state = EMovementState.Jump;
+        }
+        else if (m_Rigidbody2D.velocity.y < -0.2f)
+        {
+            state = EMovementState.Fall;
+        }
+
+        m_Animator.Play("" + state);
+    }
+    private bool IsGrounded()
     {
-        GameUI.Singleton.SetRunnerInfo(0f, 0f, m_IsBot);
-        transform.position = m_InitPos;
-        m_Movement = 0f;
-        m_Strokes = 0f;
+        return Physics2D.BoxCast(m_Collider2D.bounds.center, m_Collider2D.bounds.size, 0f, Vector2.down, 0.1f, jumpableGround);
     }
-
-
 }
