@@ -9,15 +9,18 @@ public class FollowCameraBounds2D : MonoBehaviour
     public float horizontalMargin = 0.3f;
     public float verticalMargin = 0.4f;
     public float depth = -10;
+    public float yPos = -0.7f;
     Vector3 target;
     Vector3 lastPosition;
     public float smoothTime = 0.25f;
     Vector3 currentVelocity;
+
     private void LateUpdate()
     {
         SetTarget();
         MoveCamera();
     }
+
     void SetTarget()
     {
         Vector3 movementDelta = player.position - lastPosition;
@@ -33,8 +36,11 @@ public class FollowCameraBounds2D : MonoBehaviour
             target.y += movementDelta.y;
         }
         target.z = depth;
+        target.y = yPos;
         lastPosition = player.position;
+
     }
+
     void MoveCamera()
     {
         transform.position = Vector3.SmoothDamp(transform.position, target, ref currentVelocity, smoothTime);

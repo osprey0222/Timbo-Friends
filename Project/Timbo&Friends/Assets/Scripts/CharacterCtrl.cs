@@ -102,7 +102,6 @@ public class CharacterCtrl : BaseCharacter
         }
         else if (m_Rigidbody2D.velocity.y < -0.1f)
         {
-            Debug.Log(m_Rigidbody2D.velocity.y);
              state = EMovementState.Fall;
         }
 
