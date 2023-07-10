@@ -25,36 +25,48 @@ public class CharacterCtrl : BaseCharacter
     private Animator m_Animator;
     private BoxCollider2D m_Collider2D;
     private int m_JumpCounter = 0;
+    private CharacterLogic m_Logic;
+    public CharacterLogic Logic
+    {
+        get
+        {
+            return m_Logic;
+        }
+    }
 
-    protected override void Start()
+    protected override void Awake()
     {
         m_Rigidbody2D = GetComponentInChildren<Rigidbody2D>();
         m_Animator = GetComponentInChildren<Animator>();
         m_Collider2D = GetComponentInChildren<BoxCollider2D>();
+        m_Logic = gameObject.AddComponent<CharacterLogic>();
     }
 
     void Update()
     {
-        // Speed
-        m_Speed = new Vector2(Mathf.Abs(m_Rigidbody2D.velocity.x), Mathf.Abs(m_Rigidbody2D.velocity.y));
+        if (GameData.Singleton.IsPlay)
+        {
+            // Speed
+            m_Speed = new Vector2(Mathf.Abs(m_Rigidbody2D.velocity.x), Mathf.Abs(m_Rigidbody2D.velocity.y));
 
-        // Speed Calculations
-        m_CurrentRunSpeed = m_RunSpeed;
-        if (m_Speed.x >= m_RunSpeed)
-        {
-            m_CurrentRunSpeed = Mathf.SmoothDamp(m_Speed.x, m_MaxRunSpeed, ref m_CurrentSmoothVelocity, m_RunSmoothTime);
-        }
-        // Input Processing
-        Move(Input.GetAxis("Horizontal"));
+            // Speed Calculations
+            m_CurrentRunSpeed = m_RunSpeed;
+            if (m_Speed.x >= m_RunSpeed)
+            {
+                m_CurrentRunSpeed = Mathf.SmoothDamp(m_Speed.x, m_MaxRunSpeed, ref m_CurrentSmoothVelocity, m_RunSmoothTime);
+            }
+            // Input Processing
+            Move(Input.GetAxis("Horizontal"));
 
-        if (Input.GetButtonDown("Jump") && m_JumpCounter < 1)
-        {
-            Jump();
-            ++m_JumpCounter;
-        }
-        if (IsGrounded())
-        {
-            m_JumpCounter = 0;
+            if (Input.GetButtonDown("Jump") && m_JumpCounter < 1)
+            {
+                Jump();
+                ++m_JumpCounter;
+            }
+            if (IsGrounded())
+            {
+                m_JumpCounter = 0;
+            }
         }
     }
 
@@ -67,19 +79,29 @@ public class CharacterCtrl : BaseCharacter
 
     private void Move(float horizontalAxis)
     {
-        m_Rigidbody2D.velocity = new Vector2(horizontalAxis * m_CurrentRunSpeed, m_Rigidbody2D.velocity.y);
-        if (horizontalAxis > 0f)
+        if (horizontalAxis < 0 && transform.position.x < 5f)
         {
-            Vector3 scale = transform.localScale;
-            scale.x = Mathf.Sign(horizontalAxis);
-            transform.localScale = scale;
+            m_Rigidbody2D.velocity = Vector2.zero;
         }
-        else if (horizontalAxis < 0f)
+        else
         {
-            Vector3 scale = transform.localScale;
-            scale.x = Mathf.Sign(horizontalAxis);
-            transform.localScale = scale;
+            m_Rigidbody2D.velocity = new Vector2(horizontalAxis * m_CurrentRunSpeed, m_Rigidbody2D.velocity.y);
+            if (horizontalAxis > 0f)
+            {
+                Vector3 scale = transform.localScale;
+                scale.x = Mathf.Sign(horizontalAxis);
+                transform.localScale = scale;
+            }
+            else if (horizontalAxis < 0f)
+            {
+                Vector3 scale = transform.localScale;
+                scale.x = Mathf.Sign(horizontalAxis);
+                transform.localScale = scale;
+            }
+
         }
+
+
         UpdateAnimationState(horizontalAxis);
     }
 
@@ -102,7 +124,7 @@ public class CharacterCtrl : BaseCharacter
         }
         else if (m_Rigidbody2D.velocity.y < -0.1f)
         {
-             state = EMovementState.Fall;
+            state = EMovementState.Fall;
         }
 
         m_Animator.Play("" + state);
@@ -111,6 +133,5 @@ public class CharacterCtrl : BaseCharacter
     private bool IsGrounded()
     {
         return Physics2D.BoxCast(m_Collider2D.bounds.center, m_Collider2D.bounds.size, 0f, Vector2.down, 0.1f, jumpableGround);
-
     }
 }

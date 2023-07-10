@@ -6,9 +6,12 @@ using UnityEngine.Events;
 
 public class PlayScene : SceneBase
 {
-    void Start()
+    public Transform m_CharacterPos;
+    public RunEnv m_CurEnv;
+
+    private void Start()
     {
-        //StartCoroutine(WaitShowUIS());
+        StartGame();
     }
 
     private IEnumerator WaitShowUIS()
@@ -38,10 +41,43 @@ public class PlayScene : SceneBase
     private void MainLogoKeyPressed()
     {
         UIManager.Show("UIMain").GetComponent<UIMain>().OnTutorialLevel.AddListener(EnterTutorialLevel);
+
     }
 
     private void EnterTutorialLevel()
     {
+        StartGame();
         
+    }
+
+    private void StartGame()
+    {
+        UIGame uiGame = UIManager.Show("UIGame").GetComponent<UIGame>();
+        CloneEnv(Vector3.zero);
+        CharacterCtrl player = Instantiate<CharacterCtrl>(Resources.Load<CharacterCtrl>("Prefab/Player"));
+        player.transform.position = m_CharacterPos.position;
+        player.Logic.OnHitVWall += HitVWall;
+        GameData.Singleton.IsPlay = true;
+        GameData.Singleton.OnSuccessEnd += SuccessEnd;
+        FollowCameraBounds2D.Singletone.player = player.transform;
+    }
+
+    private void SuccessEnd()
+    {
+        UIManager.Show("UISuccess");
+    }
+
+    private void CloneEnv(Vector3 position)
+    {
+        RunEnv runEnv = Instantiate<RunEnv>(Resources.Load<RunEnv>("Prefab/RunEnv"));
+        runEnv.transform.position = position;
+
+        m_CurEnv = runEnv;
+    }
+   
+    private void HitVWall()
+    {
+        CloneEnv(m_CurEnv.NextRunEnvPos);
+        m_CurEnv.SpawnSprites();
     }
 }

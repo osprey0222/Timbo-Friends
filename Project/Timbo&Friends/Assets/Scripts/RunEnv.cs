@@ -7,6 +7,7 @@ public class RunEnv : MonoBehaviour
     public SpriteRenderer m_SampleBone;
     public SpriteRenderer m_SampleCookie;
     public SpriteRenderer m_SampleSr;
+    public SpriteRenderer m_Home;
     public Sprite[] m_ObsSprites;
     public Transform[] m_ObstaclePoses;
     public int m_ObsLimitCount = 10;
@@ -20,15 +21,44 @@ public class RunEnv : MonoBehaviour
     private float[] m_ToySpeeds = new float[3] { 0.1f, 0.2f, 0.3f };
     private float m_BoneSpeed = 1f;
     private float m_CookieSpeed = 4f;
+    private float EnvWidth
+    {
+        get
+        {
+            return GetComponent<SpriteRenderer>().bounds.size.x;
+        }
+    }
+    public float XLimit
+    {
+        get
+        {
+            return transform.position.x - GetComponent<SpriteRenderer>().bounds.size.x / 2;
+        }
+    }
     private void Start()
     {
-        Debug.Log(GetComponent<SpriteRenderer>().bounds.size.x);
-        float xSpriteLen = GetComponent<SpriteRenderer>().bounds.size.x;
-        float xMin = transform.position.x - xSpriteLen / 2;
-        float xMax = transform.position.x + xSpriteLen / 2;
+        float xMin = transform.position.x - EnvWidth / 2;
+        float xMax = transform.position.x + EnvWidth / 2;
+    }
+
+    public void SpawnSprites()
+    {
         SpawnBones();
         SpawnToys();
         SpawnCookies();
+    }
+
+    public void ShowSuccess()
+    {
+        m_Home.gameObject.SetActive(true);
+    }
+
+    public Vector3 NextRunEnvPos
+    {
+        get
+        {
+            return new Vector3(transform.position.x + EnvWidth, transform.position.y, transform.position.z);
+        }
     }
 
     private void SpawnCookies()

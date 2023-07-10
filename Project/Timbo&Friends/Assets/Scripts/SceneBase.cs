@@ -4,8 +4,13 @@ using UnityEngine;
 
 public class SceneBase : MonoBehaviour
 {
+    public static SceneBase Singletone;
     protected virtual void Awake()
     {
         UIManager.Init();
+        if (Singletone==null)
+        {
+            Singletone = this;
+        }
     }
 }

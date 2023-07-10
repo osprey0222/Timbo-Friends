@@ -13,7 +13,7 @@ public static class Config
     internal static readonly float THIRD_LOGO_TIME = 1.0f;
     internal static readonly float MAIN_LOGO_TIME = 1.0f;
     public static float LOADING_TIME = 0f;
-    public static float TIMEER_INTERVAL = 0.01f;
+    public static float TIMEER_INTERVAL = 1f;
     public static string UI_PREFAB_PATH = "Prefab/UI/";
 
 }
