@@ -22,7 +22,8 @@ public static class UIManager
             if (m_UIDic.ContainsKey(uiName))
             {
                 m_UIDic[uiName].GetComponent<RectTransform>().SetAsLastSibling();
-                m_UIDic[uiName].gameObject.SetActive(true);
+                uiObj = m_UIDic[uiName].gameObject;
+                uiObj.SetActive(true);
             }
             else
             {

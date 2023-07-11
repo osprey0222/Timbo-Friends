@@ -13,4 +13,9 @@ public class SceneBase : MonoBehaviour
             Singletone = this;
         }
     }
+
+    protected virtual void OnDestroy()
+    {
+        UIManager.ClearUIs();
+    }
 }
