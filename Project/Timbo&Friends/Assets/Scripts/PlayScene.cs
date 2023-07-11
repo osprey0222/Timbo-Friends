@@ -8,76 +8,126 @@ public class PlayScene : SceneBase
 {
     public Transform m_CharacterPos;
     public RunEnv m_CurEnv;
-
+    private CharacterCtrl m_Player;
+    private bool m_IsSuccess;
     private void Start()
     {
-        StartGame();
+        IniteGame();
     }
 
-    private IEnumerator WaitShowUIS()
+    private void Reset()
     {
-        string uiPrefabName = "UIFLogo";
-        UIManager.Show(uiPrefabName);
-        yield return new WaitForSeconds(Config.FIRST_LOGO_TIME);
-        UIManager.HideUI(uiPrefabName);
 
-        uiPrefabName = "UISLogo";
-        UIManager.Show(uiPrefabName);
-        yield return new WaitForSeconds(Config.SECOND_LOGO_TIME);
-        UIManager.HideUI(uiPrefabName);
-
-        uiPrefabName = "UITLogo";
-        UIManager.Show(uiPrefabName);
-        yield return new WaitForSeconds(Config.SECOND_LOGO_TIME);
-        UIManager.HideUI(uiPrefabName);
-
-        uiPrefabName = "UIMainLogo";
-        UIManager.Show(uiPrefabName).GetComponent<UIMainLogo>().OnPressedKey.AddListener(MainLogoKeyPressed);
-        yield return new WaitForSeconds(Config.MAIN_LOGO_TIME);
-
-        yield return null;
     }
-
-    private void MainLogoKeyPressed()
+    private void Update()
     {
-        UIManager.Show("UIMain").GetComponent<UIMain>().OnTutorialLevel.AddListener(EnterTutorialLevel);
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            string prefabName = "UIPause";
+            if (GameData.Singleton.IsPlay)
+            {
+                GameData.Singleton.IsPlay = false;
+                UIManager.Show(prefabName);
+
+            }
+            else
+            {
+                GameData.Singleton.IsPlay = true;
+                UIManager.HideUI(prefabName);
+            }
+        }
+    }
+
+
+    internal void Resume()
+    {
+        GameData.Singleton.IsPlay = true;
+        UIManager.HideUI("UIPause");
+    }
+
+    internal void LevelSelect()
+    {
 
     }
+
 
     private void EnterTutorialLevel()
     {
-        StartGame();
-        
+        IniteGame();
     }
 
-    private void StartGame()
+    private void IniteGame()
     {
         UIGame uiGame = UIManager.Show("UIGame").GetComponent<UIGame>();
         CloneEnv(Vector3.zero);
-        CharacterCtrl player = Instantiate<CharacterCtrl>(Resources.Load<CharacterCtrl>("Prefab/Player"));
-        player.transform.position = m_CharacterPos.position;
-        player.Logic.OnHitVWall += HitVWall;
+        m_Player = Instantiate<CharacterCtrl>(Resources.Load<CharacterCtrl>("Prefab/Player"));
+        m_Player.transform.position = m_CharacterPos.position;
+        m_Player.Logic.OnHitVWall += HitVWall;
         GameData.Singleton.IsPlay = true;
         GameData.Singleton.OnSuccessEnd += SuccessEnd;
-        FollowCameraBounds2D.Singletone.player = player.transform;
+        GameData.Singleton.OnDead += Dead;
+        FollowCameraBounds2D.Singletone.player = m_Player.transform;
     }
 
+    private void Dead()
+    {
+        UIManager.Show("UIGameOver");
+        m_Player.Dead();
+    }
+    
     private void SuccessEnd()
     {
-        UIManager.Show("UISuccess");
+        m_CurEnv.HideToys();
+        CloneEnv(m_CurEnv.NextRunEnvPos);
+        m_CurEnv.ShowSuccess();
+        CloneEnv(m_CurEnv.NextRunEnvPos);
+        m_IsSuccess = true;
+        //UIManager.Show("UISuccess");
     }
 
     private void CloneEnv(Vector3 position)
     {
         RunEnv runEnv = Instantiate<RunEnv>(Resources.Load<RunEnv>("Prefab/RunEnv"));
         runEnv.transform.position = position;
-
+        runEnv.SetParams(3);
         m_CurEnv = runEnv;
     }
-   
+
     private void HitVWall()
     {
-        CloneEnv(m_CurEnv.NextRunEnvPos);
-        m_CurEnv.SpawnSprites();
+        if (m_IsSuccess)
+        {
+            UIBase uiSuccess =  UIManager.Show("UISuccess").GetComponent<UIBase>();
+            uiSuccess.Buttons[0].onClick.AddListener(OnClickSucUIBackBtn);
+            uiSuccess.Buttons[1].onClick.AddListener(OnClickSucUIRestartBtn);
+            m_Player.Success();
+            GameData.Singleton.IsPlay = false;
+        }
+        else
+        {
+            CloneEnv(m_CurEnv.NextRunEnvPos);
+            m_CurEnv.SpawnSprites();
+        }
+    }
+
+    private void OnClickSucUIRestartBtn()
+    {
+    }
+
+    private void OnClickSucUIBackBtn()
+    {
+
+    }
+
+    public void QuitGame()
+    {
+        // save any game data here
+#if UNITY_EDITOR
+        // Application.Quit() does not work in the editor so
+        // UnityEditor.EditorApplication.isPlaying need to be set to false to end the game
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
 }

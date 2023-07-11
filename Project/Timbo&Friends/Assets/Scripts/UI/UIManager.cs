@@ -7,6 +7,7 @@ public static class UIManager
     private static Dictionary<string, GameObject> m_UIDic = new Dictionary<string, GameObject>();
     private static Canvas m_Canvas;
     private static string m_UIPath = "UI/Prefab/";
+    private static GameObject m_CurUI;
 
     public static void Init()
     {
@@ -36,6 +37,7 @@ public static class UIManager
                 uiObj.SetActive(true);
                 m_UIDic.Add(uiName, uiObj);
             }
+            m_CurUI = uiObj;
             return uiObj;
         }
         catch (System.Exception)
@@ -43,6 +45,11 @@ public static class UIManager
             Debug.LogWarning("UI is not exist: " + m_UIPath + uiName);
         }
         return null;
+    }
+
+    public static void HideCurUI()
+    {
+        m_CurUI.SetActive(false);
     }
 
     public static void HideUI(string uiName)

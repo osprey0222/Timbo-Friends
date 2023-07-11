@@ -24,6 +24,7 @@ public class CharacterLogic : MonoBehaviour
         }
         else if (collision.gameObject.CompareTag("Toy")) 
         {
+            GameData.Singleton.IsPlay = false;
             GameData.Singleton.IsDead = true;
         }
     }

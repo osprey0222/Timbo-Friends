@@ -8,9 +8,10 @@ public class RunEnv : MonoBehaviour
     public SpriteRenderer m_SampleCookie;
     public SpriteRenderer m_SampleSr;
     public SpriteRenderer m_Home;
+    public GameObject m_VirtualWall;
     public Sprite[] m_ObsSprites;
     public Transform[] m_ObstaclePoses;
-    public int m_ObsLimitCount = 10;
+    public int m_ToyCountLimit = 10;
     public int m_BoneCountLimit = 3;
     public int m_CookieCountLimit = 1;
     public Transform[] m_BonePoses;
@@ -35,6 +36,12 @@ public class RunEnv : MonoBehaviour
             return transform.position.x - GetComponent<SpriteRenderer>().bounds.size.x / 2;
         }
     }
+
+    public void SetParams(int toyLimit)
+    {
+        m_ToyCountLimit = toyLimit;
+    }
+
     private void Start()
     {
         float xMin = transform.position.x - EnvWidth / 2;
@@ -51,6 +58,14 @@ public class RunEnv : MonoBehaviour
     public void ShowSuccess()
     {
         m_Home.gameObject.SetActive(true);
+    }
+
+    public void HideToys()
+    {
+        Debug.Log("Hide Toys");
+        m_ToyGroup.gameObject.SetActive(false);
+        m_VirtualWall.SetActive(false);
+
     }
 
     public Vector3 NextRunEnvPos
@@ -80,7 +95,7 @@ public class RunEnv : MonoBehaviour
         float xMin = 0f, xMax = 0f;
         GetSpriteXEdgePos(ref xMin, ref xMax);
 
-        for (int i = 0; i < m_ObsLimitCount; i++)
+        for (int i = 0; i < m_ToyCountLimit; i++)
         {
             Vector2 randomPos = Vector2.zero;
             int yRandomIdx = Random.Range(0, m_ObstaclePoses.Length);
@@ -134,7 +149,10 @@ public class MovingObj : MonoBehaviour
     private Vector3 m_Dir;
     private void Update()
     {
-        transform.Translate(m_Dir * m_MoveSpeed * Time.deltaTime);
+        if (GameData.Singleton.IsPlay)
+        {
+            transform.Translate(m_Dir * m_MoveSpeed * Time.deltaTime);
+        }
     }
 
     public void SetMoveInfo(Vector3 dir, float speed)

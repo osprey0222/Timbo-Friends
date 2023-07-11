@@ -11,6 +11,19 @@ public class GameData : MonoBehaviour
     public Action OnSuccessEnd;
     public Action OnDead;
     public Action<int> OnTimeChange;
+    private int m_CurLevel = 0;
+    public int CurLevel
+    {
+        get
+        {
+            return m_CurLevel;
+
+        }
+        set
+        {
+            m_CurLevel = value;
+        }
+    }
 
     private int m_CookieCount;
     public int CookieCount
@@ -26,13 +39,12 @@ public class GameData : MonoBehaviour
             {
                 OnCookieCountChanged(value);
             }
-            if (m_CookieCount == CookieGoalCount)
+            if (value == CookieGoalCount)
             {
                 if (OnSuccessEnd != null)
                 {
                     OnSuccessEnd();
                 }
-                IsPlay = false;
             }
         }
     }
@@ -73,8 +85,14 @@ public class GameData : MonoBehaviour
         }
     }
 
-    private int m_CookieGoalCount = 10;
-    public int CookieGoalCount { get; internal set; }
+    private int m_CookieGoalCount = 1;
+    public int CookieGoalCount
+    {
+        get
+        {
+            return m_CookieGoalCount;
+        }
+    }
 
     private void Awake()
     {
@@ -97,7 +115,7 @@ public class GameData : MonoBehaviour
         {
             yield return new WaitForSecondsRealtime(Config.TIMEER_INTERVAL);
             m_Time += 1f;
-            if (OnTimeChange!=null)
+            if (OnTimeChange != null)
             {
                 OnTimeChange((int)m_Time);
             }
@@ -107,4 +125,18 @@ public class GameData : MonoBehaviour
             }
         }
     }
+
+    public void QuitGame()
+    {
+        // save any game data here
+#if UNITY_EDITOR
+        // Application.Quit() does not work in the editor so
+        // UnityEditor.EditorApplication.isPlaying need to be set to false to end the game
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+    }
+
+
 }

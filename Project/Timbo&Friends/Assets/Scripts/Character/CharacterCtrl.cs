@@ -56,7 +56,7 @@ public class CharacterCtrl : BaseCharacter
                 m_CurrentRunSpeed = Mathf.SmoothDamp(m_Speed.x, m_MaxRunSpeed, ref m_CurrentSmoothVelocity, m_RunSmoothTime);
             }
             // Input Processing
-            Move(Input.GetAxis("Horizontal"));
+            Move(Input.GetAxisRaw("Horizontal"));
 
             if (Input.GetButtonDown("Jump") && m_JumpCounter < 1)
             {
@@ -67,6 +67,10 @@ public class CharacterCtrl : BaseCharacter
             {
                 m_JumpCounter = 0;
             }
+        }
+        else
+        {
+            m_Rigidbody2D.velocity = Vector2.zero;
         }
     }
 
@@ -98,9 +102,7 @@ public class CharacterCtrl : BaseCharacter
                 scale.x = Mathf.Sign(horizontalAxis);
                 transform.localScale = scale;
             }
-
         }
-
 
         UpdateAnimationState(horizontalAxis);
     }
@@ -133,5 +135,15 @@ public class CharacterCtrl : BaseCharacter
     private bool IsGrounded()
     {
         return Physics2D.BoxCast(m_Collider2D.bounds.center, m_Collider2D.bounds.size, 0f, Vector2.down, 0.1f, jumpableGround);
+    }
+
+    public void Dead()
+    {
+        m_Animator.Play("" + EMovementState.Death);
+    }
+
+    public void Success()
+    {
+        m_Animator.Play("" + EMovementState.Yeah);
     }
 }
