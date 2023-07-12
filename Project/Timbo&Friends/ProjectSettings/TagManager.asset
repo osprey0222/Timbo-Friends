@@ -3,7 +3,11 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - VirtualWall
+  - Cookie
+  - Toy
+  - MainCanvas
   layers:
   - Default
   - TransparentFX

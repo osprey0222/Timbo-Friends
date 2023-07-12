@@ -3,64 +3,57 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 public class PlayScene : SceneBase
 {
     public Transform m_CharacterPos;
+    public List<RunEnv> m_Envs;
     public RunEnv m_CurEnv;
     private CharacterCtrl m_Player;
     private bool m_IsSuccess;
     private void Start()
     {
-        IniteGame();
+        m_Envs = new List<RunEnv>();
+        UIManager.Show("UIMain");
+        //UIManager.Show("UIMain");
+        //IniteGame();
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape) && GameData.Singleton.IsPlay)
+        {
+            string prefabName = "UIPause";
+            GameData.Singleton.IsPlay = false;
+            UIManager.Show(prefabName);
+        }
     }
 
     private void Reset()
     {
-
-    }
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        foreach (var item in m_Envs)
         {
-            string prefabName = "UIPause";
-            if (GameData.Singleton.IsPlay)
-            {
-                GameData.Singleton.IsPlay = false;
-                UIManager.Show(prefabName);
-
-            }
-            else
-            {
-                GameData.Singleton.IsPlay = true;
-                UIManager.HideUI(prefabName);
-            }
+            Destroy(item.gameObject);
         }
+        m_Envs.Clear();
+        if (m_Player != null)
+        {
+            Destroy(m_Player.gameObject);
+            m_Player = null;
+
+        }
+        m_IsSuccess = false;
+
+        GameData.Singleton.ResetData();
     }
-
-
-    internal void Resume()
+    public void IniteGame()
     {
-        GameData.Singleton.IsPlay = true;
-        UIManager.HideUI("UIPause");
-    }
+        Reset();
 
-    internal void LevelSelect()
-    {
-
-    }
-
-
-    private void EnterTutorialLevel()
-    {
-        IniteGame();
-    }
-
-    private void IniteGame()
-    {
         UIGame uiGame = UIManager.Show("UIGame").GetComponent<UIGame>();
         CloneEnv(Vector3.zero);
-        m_Player = Instantiate<CharacterCtrl>(Resources.Load<CharacterCtrl>("Prefab/Player"));
+        m_Player = Instantiate(Resources.Load<CharacterCtrl>("Prefab/Player"));
         m_Player.transform.position = m_CharacterPos.position;
         m_Player.Logic.OnHitVWall += HitVWall;
         GameData.Singleton.IsPlay = true;
@@ -71,10 +64,11 @@ public class PlayScene : SceneBase
 
     private void Dead()
     {
-        UIManager.Show("UIGameOver");
+        GameData.Singleton.IsPlay = false;
+        UIMsg.ShowMsg("UIGameOver", OnClickBack, OnClickRestart);
         m_Player.Dead();
     }
-    
+
     private void SuccessEnd()
     {
         m_CurEnv.HideToys();
@@ -91,15 +85,14 @@ public class PlayScene : SceneBase
         runEnv.transform.position = position;
         runEnv.SetParams(3);
         m_CurEnv = runEnv;
+        m_Envs.Add(runEnv);
     }
 
     private void HitVWall()
     {
         if (m_IsSuccess)
         {
-            UIBase uiSuccess =  UIManager.Show("UISuccess").GetComponent<UIBase>();
-            uiSuccess.Buttons[0].onClick.AddListener(OnClickSucUIBackBtn);
-            uiSuccess.Buttons[1].onClick.AddListener(OnClickSucUIRestartBtn);
+            UIMsg.ShowMsg("UISuccess", OnClickBack, OnClickRestart);
             m_Player.Success();
             GameData.Singleton.IsPlay = false;
         }
@@ -110,13 +103,22 @@ public class PlayScene : SceneBase
         }
     }
 
-    private void OnClickSucUIRestartBtn()
+    private void OnClickRestart()
     {
+        IniteGame();
     }
 
-    private void OnClickSucUIBackBtn()
+    private void OnClickBack()
     {
-
+        UIManager.HideAllUI();
+        if (GameData.Singleton.CurLevel == -1)
+        {
+            UIManager.Show("UIMain");
+        }
+        else
+        {
+            UIManager.Show("UISelectLevel");
+        }
     }
 
     public void QuitGame()

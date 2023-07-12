@@ -23,6 +23,9 @@ public class UIGame : UIBase
 
     public void SetTime(int time)
     {
-        m_Time.text = time + "";
+        if (m_Time != null)
+        {
+            m_Time.text = time + "";
+        }
     }
 }

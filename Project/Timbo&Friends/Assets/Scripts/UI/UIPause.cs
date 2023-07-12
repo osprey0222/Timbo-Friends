@@ -23,19 +23,22 @@ public class UIPause : UIBase
 
     }
 
+    private void OnClickContiueBtn()
+    {
+        GameData.Singleton.IsPlay = true;
+        UIManager.HideUI("UIPause");
+    }
+
+    private void OnClickLevelSelBtn()
+    {
+        UIManager.HideAllUI();
+        UIManager.Show("UILevelSelect");
+    }
+
     private void OnClickQuiteBtn()
     {
         ((PlayScene)PlayScene.Singletone).QuitGame();
     }
 
-    private void OnClickLevelSelBtn()
-    {
-        ((PlayScene)PlayScene.Singletone).LevelSelect();
-    }
-
-    private void OnClickContiueBtn()
-    {
-        ((PlayScene)PlayScene.Singletone).Resume();
-    }
 }
 

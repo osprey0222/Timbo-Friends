@@ -11,7 +11,16 @@ public static class UIManager
 
     public static void Init()
     {
-        m_Canvas = GameObject.FindObjectOfType<Canvas>();
+        var cans = GameObject.FindObjectsOfType<Canvas>();
+        foreach (var item in cans)
+        {
+            if (item.gameObject.CompareTag("MainCanvas"))
+            {
+                m_Canvas = item;
+                break;
+            }
+        }
+
     }
 
     public static GameObject Show(string uiName)
@@ -50,12 +59,23 @@ public static class UIManager
 
     public static void HideCurUI()
     {
-        m_CurUI.SetActive(false);
+        if (m_CurUI != null)
+        {
+            m_CurUI.SetActive(false);
+        }
     }
 
     public static void HideUI(string uiName)
     {
         m_UIDic[uiName].gameObject.SetActive(false);
+    }
+
+    public static void HideAllUI()
+    {
+        foreach (var item in m_UIDic)
+        {
+            item.Value.gameObject.SetActive(false);
+        }
     }
 
     private static void ShowUI(string uiName)

@@ -69,6 +69,13 @@ public class GameData : MonoBehaviour
         }
     }
 
+    internal void ResetData()
+    {
+        m_IsDead = false;
+        m_Time = 0;
+        CookieCount = 0;
+    }
+
     private bool m_GameRunning = true;
     private float m_Time;
 
@@ -94,6 +101,8 @@ public class GameData : MonoBehaviour
         }
     }
 
+    public bool OpenLevelUIInStartScene { get; internal set; }
+
     private void Awake()
     {
         if (Singleton == null)
@@ -102,6 +111,7 @@ public class GameData : MonoBehaviour
         }
         else
         {
+            Destroy(gameObject);
             return;
         }
 

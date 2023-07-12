@@ -11,7 +11,7 @@ public class LogoScene : SceneBase
     {
         StartCoroutine(WaitShowUIs());
     }
-   
+
     private IEnumerator WaitShowUIs()
     {
         string uiPrefabName = "UIFLogo";
@@ -30,7 +30,7 @@ public class LogoScene : SceneBase
         UIManager.HideUI(uiPrefabName);
 
         uiPrefabName = "UIMainLogo";
-        UIManager.Show(uiPrefabName).GetComponent<UIMainLogo>().OnPressedKey+=MainLogoKeyPressed;
+        UIManager.Show(uiPrefabName).GetComponent<UIMainLogo>().OnPressedKey += MainLogoKeyPressed;
         yield return new WaitForSeconds(Config.MAIN_LOGO_TIME);
 
         yield return null;
@@ -38,6 +38,6 @@ public class LogoScene : SceneBase
 
     private void MainLogoKeyPressed()
     {
-        SceneManager.LoadScene("Start");
+        SceneManager.LoadScene("Play");
     }
 }

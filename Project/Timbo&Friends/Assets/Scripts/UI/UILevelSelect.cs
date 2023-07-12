@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UILevelSelect : UIBase
@@ -24,14 +25,25 @@ public class UILevelSelect : UIBase
             btn.OnClickLevelBtn += ClickLevel;
 
         }
+
+        m_BackBtn.onClick.AddListener(OnClickBackBtn);
+        m_SaveBtn.onClick.AddListener(OnClickSaveBtn);
+    }
+
+    private void OnClickSaveBtn()
+    {
+    }
+
+    private void OnClickBackBtn()
+    {
+        UIManager.HideAllUI();
+        UIManager.Show("UIMain");
     }
 
     private void ClickLevel(int obj)
     {
-        if (OnClickedLevel != null)
-        {
-            OnClickedLevel(obj);
-        }
+        GameData.Singleton.CurLevel = obj;
+        SceneManager.LoadScene("Play");
     }
 }
 
