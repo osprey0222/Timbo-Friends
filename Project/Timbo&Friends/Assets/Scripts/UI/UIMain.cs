@@ -26,12 +26,7 @@ public class UIMain : UIBase
     private void OnClickTutorial()
     {
         GameData.Singleton.CurLevel = -1;
-        //SceneManager.LoadScene("Play");
-        UIManager.HideCurUI();
         ((PlayScene.Singletone) as PlayScene).IniteGame();
-
-
-
     }
 
     public void OnClickLevelSelect()

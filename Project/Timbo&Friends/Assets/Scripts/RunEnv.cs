@@ -8,10 +8,12 @@ public class RunEnv : MonoBehaviour
     public SpriteRenderer m_SampleCookie;
     public SpriteRenderer m_SampleSr;
     public SpriteRenderer m_Home;
+    public SpriteRenderer m_SampleCar;
     public GameObject m_VirtualWall;
     public Sprite[] m_ObsSprites;
     public Transform[] m_ObstaclePoses;
     public int m_ToyCountLimit = 10;
+    public float m_PlusSpeed = 0f;
     public int m_BoneCountLimit = 3;
     public int m_CookieCountLimit = 1;
     public Transform[] m_BonePoses;
@@ -21,7 +23,9 @@ public class RunEnv : MonoBehaviour
     public Transform m_CookieGroup;
     private float[] m_ToySpeeds = new float[3] { 0.1f, 0.2f, 0.3f };
     private float m_BoneSpeed = 1f;
+    private float m_CarSpeed = 3f;
     private float m_CookieSpeed = 4f;
+
     private float EnvWidth
     {
         get
@@ -37,9 +41,10 @@ public class RunEnv : MonoBehaviour
         }
     }
 
-    public void SetParams(int toyLimit)
+    public void SetParams(int toyLimit, float plusSpeed)
     {
         m_ToyCountLimit = toyLimit;
+        m_PlusSpeed = plusSpeed;
     }
 
     private void Start()
@@ -53,6 +58,7 @@ public class RunEnv : MonoBehaviour
         SpawnBones();
         SpawnToys();
         SpawnCookies();
+        SpawnToyCar();
     }
 
     public void ShowSuccess()
@@ -74,6 +80,19 @@ public class RunEnv : MonoBehaviour
         {
             return new Vector3(transform.position.x + EnvWidth, transform.position.y, transform.position.z);
         }
+    }
+
+    private void SpawnToyCar()
+    {
+        Vector2 randomPos = Vector2.zero;
+        int yRandomIdx = Random.Range(0, m_ObstaclePoses.Length);
+        randomPos.y = m_ObstaclePoses[yRandomIdx].position.y;
+        randomPos.x = XLimit + GetComponent<SpriteRenderer>().bounds.size.x;
+        SpriteRenderer sr = Instantiate(m_SampleCar);
+        sr.transform.SetParent(m_ToyGroup);
+        sr.transform.localScale = Vector3.one;
+        sr.transform.position = randomPos;
+        sr.gameObject.AddComponent<MovingObj>().SetMoveInfo(Vector3.left, m_CarSpeed);
     }
 
     private void SpawnCookies()
@@ -99,7 +118,6 @@ public class RunEnv : MonoBehaviour
         {
             Vector2 randomPos = Vector2.zero;
             int yRandomIdx = Random.Range(0, m_ObstaclePoses.Length);
-            Debug.Log(yRandomIdx);
             randomPos.y = m_ObstaclePoses[yRandomIdx].position.y;
             randomPos.x = Random.Range(xMin, xMax);
 
@@ -110,7 +128,7 @@ public class RunEnv : MonoBehaviour
             sr.transform.position = randomPos;
             sr.GetComponent<BoxCollider2D>().size = sr.bounds.size;
             int speedRandIdx = Random.Range(0, m_ToySpeeds.Length);
-            sr.gameObject.AddComponent<MovingObj>().SetMoveInfo(Vector3.right, m_ToySpeeds[speedRandIdx]);
+            sr.gameObject.AddComponent<MovingObj>().SetMoveInfo(Vector3.right, m_ToySpeeds[speedRandIdx] + m_PlusSpeed);
 
         }
     }

@@ -58,7 +58,7 @@ public class CharacterCtrl : BaseCharacter
             // Input Processing
             Move(Input.GetAxisRaw("Horizontal"));
 
-            if (Input.GetButtonDown("Jump") && m_JumpCounter < 1)
+            if (Input.GetButtonDown("Jump") && m_JumpCounter < 1 && !GameData.Singleton.IsSuccess)
             {
                 Jump();
                 ++m_JumpCounter;
@@ -83,7 +83,7 @@ public class CharacterCtrl : BaseCharacter
 
     private void Move(float horizontalAxis)
     {
-        if (horizontalAxis < 0 && transform.position.x < 5f)
+        if (horizontalAxis < 0 && transform.position.x < (GameData.Singleton.PlayerSpawnPos.x-1f))
         {
             m_Rigidbody2D.velocity = Vector2.zero;
         }

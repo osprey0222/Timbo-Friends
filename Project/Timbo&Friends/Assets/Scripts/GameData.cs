@@ -11,6 +11,7 @@ public class GameData : MonoBehaviour
     public Action OnSuccessEnd;
     public Action OnDead;
     public Action<int> OnTimeChange;
+    public bool IsSuccess = false;
     private int m_CurLevel = 0;
     public int CurLevel
     {
@@ -88,7 +89,10 @@ public class GameData : MonoBehaviour
         set
         {
             m_GameRunning = value;
-            StartCoroutine(StopWatch());
+            if (value)
+            {
+                StartCoroutine(StopWatch());
+            }
         }
     }
 
@@ -99,9 +103,21 @@ public class GameData : MonoBehaviour
         {
             return m_CookieGoalCount;
         }
+        set
+        {
+            m_CookieGoalCount = value;
+        }
     }
 
     public bool OpenLevelUIInStartScene { get; internal set; }
+    public Vector3 PlayerSpawnPos { get; internal set; }
+    public float Time
+    {
+        get
+        {
+            return m_Time;
+        }
+    }
 
     private void Awake()
     {

@@ -40,10 +40,10 @@ public class UILevelSelect : UIBase
         UIManager.Show("UIMain");
     }
 
-    private void ClickLevel(int obj)
+    private void ClickLevel(int levelIdx)
     {
-        GameData.Singleton.CurLevel = obj;
-        SceneManager.LoadScene("Play");
+        GameData.Singleton.CurLevel = levelIdx;
+        ((PlayScene.Singletone) as PlayScene).IniteGame();
     }
 }
 

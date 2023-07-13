@@ -11,11 +11,12 @@ public class PlayScene : SceneBase
     public List<RunEnv> m_Envs;
     public RunEnv m_CurEnv;
     private CharacterCtrl m_Player;
-    private bool m_IsSuccess;
+    //private bool m_IsSuccess;
     private void Start()
     {
         m_Envs = new List<RunEnv>();
         UIManager.Show("UIMain");
+        GameData.Singleton.PlayerSpawnPos = m_CharacterPos.position;
         //UIManager.Show("UIMain");
         //IniteGame();
     }
@@ -32,6 +33,9 @@ public class PlayScene : SceneBase
 
     private void Reset()
     {
+        GameData.Singleton.OnSuccessEnd -= SuccessEnd;
+        GameData.Singleton.OnDead -= Dead;
+
         foreach (var item in m_Envs)
         {
             Destroy(item.gameObject);
@@ -43,14 +47,17 @@ public class PlayScene : SceneBase
             m_Player = null;
 
         }
-        m_IsSuccess = false;
+        //m_IsSuccess = false;
+        GameData.Singleton.IsSuccess = false;
 
         GameData.Singleton.ResetData();
     }
     public void IniteGame()
     {
-        Reset();
+        UIManager.HideAllUI();
 
+        Reset();
+        GameData.Singleton.CookieGoalCount = Config.LEVELS_INFO[GameData.Singleton.CurLevel].CookieGoalCount;
         UIGame uiGame = UIManager.Show("UIGame").GetComponent<UIGame>();
         CloneEnv(Vector3.zero);
         m_Player = Instantiate(Resources.Load<CharacterCtrl>("Prefab/Player"));
@@ -75,7 +82,7 @@ public class PlayScene : SceneBase
         CloneEnv(m_CurEnv.NextRunEnvPos);
         m_CurEnv.ShowSuccess();
         CloneEnv(m_CurEnv.NextRunEnvPos);
-        m_IsSuccess = true;
+        GameData.Singleton.IsSuccess = true;
         //UIManager.Show("UISuccess");
     }
 
@@ -83,14 +90,14 @@ public class PlayScene : SceneBase
     {
         RunEnv runEnv = Instantiate<RunEnv>(Resources.Load<RunEnv>("Prefab/RunEnv"));
         runEnv.transform.position = position;
-        runEnv.SetParams(3);
+        runEnv.SetParams(Config.LEVELS_INFO[GameData.Singleton.CurLevel].ToyCount, Config.LEVELS_INFO[GameData.Singleton.CurLevel].ToyPlusSpeed);
         m_CurEnv = runEnv;
         m_Envs.Add(runEnv);
     }
 
     private void HitVWall()
     {
-        if (m_IsSuccess)
+        if (GameData.Singleton.IsSuccess)
         {
             UIMsg.ShowMsg("UISuccess", OnClickBack, OnClickRestart);
             m_Player.Success();
@@ -117,7 +124,7 @@ public class PlayScene : SceneBase
         }
         else
         {
-            UIManager.Show("UISelectLevel");
+            UIManager.Show("UILevelSelect");
         }
     }
 
@@ -125,8 +132,6 @@ public class PlayScene : SceneBase
     {
         // save any game data here
 #if UNITY_EDITOR
-        // Application.Quit() does not work in the editor so
-        // UnityEditor.EditorApplication.isPlaying need to be set to false to end the game
         UnityEditor.EditorApplication.isPlaying = false;
 #else
         Application.Quit();
