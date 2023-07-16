@@ -1,5 +1,5 @@
 <img src="4.gif"/>
-<p>
+<p align="center">
   Introduction
 </p> 
 <br>
